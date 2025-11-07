@@ -8,7 +8,7 @@ on:
 
 jobs:
     CTest:
-        runs-on: ubuntu-latest
+        runs-on: macos-latest # Use macOS for now while other images are lagging on CMake ^4.0
 
         steps:
             - name: Checkout
