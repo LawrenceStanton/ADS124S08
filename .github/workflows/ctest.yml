@@ -1,0 +1,26 @@
+name: CTest
+
+on:
+    push:
+        paths-ignore:
+            - 'README.md'
+            - 'LICENSE.md'
+
+jobs:
+    CTest:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Configure CMake
+              run: cmake -B ${{github.workspace}}/Build
+
+            - name: Build
+              run: cmake --build ${{github.workspace}}/Build
+
+            - name: Test
+              working-directory: ${{github.workspace}}/Build
+              run: ctest --output-on-failure
+            
