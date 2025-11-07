@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 4.0)
 
 project(ADS124S08)
 
+set(LIBRARY ${PROJECT_NAME})
+
 enable_language(CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -15,7 +17,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Inc
 )
 
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${LIBRARY}::${LIBRARY} ALIAS ${LIBRARY})
 
 if(NOT CMAKE_CROSSCOMPILING)
 	option(ADS124S08_CODE_COVERAGE "Enable gcovr code coverage for ADS124S08" OFF)
