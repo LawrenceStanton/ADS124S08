@@ -15,9 +15,10 @@ public:
 	 */
 	class SPI {
 	public:
-		typedef uint8_t Command;
+		typedef uint8_t	 Register;
+		typedef Register Command;
 
-		enum class ControlCommand : Command {
+		enum ControlCommand : Command {
 			NOP		  = 0x00u,
 			WAKEUP	  = 0x02u,
 			POWERDOWN = 0x04u,
@@ -26,17 +27,17 @@ public:
 			STOP	  = 0x0Au,
 		};
 
-		enum class CalibrationCommand : Command {
+		enum CalibrationCommand : Command {
 			SYS_OFFSET_CAL	= 0x16u,
 			SYS_GAIN_CAL	= 0x17u,
 			SELF_OFFSET_CAL = 0x19u,
 		};
 
-		enum class DataReadCommand : Command {
+		enum DataReadCommand : Command {
 			RDATA = 0x12u,
 		};
 
-		enum class Address : uint8_t {
+		enum Address : uint8_t {
 			ID		  = 0x00u,
 			STATUS	  = 0x01u,
 			INP_MUX	  = 0x02u,
@@ -56,8 +57,6 @@ public:
 			GPIO_DATA = 0x10u,
 			GPIO_CON  = 0x11u,
 		};
-
-		typedef uint8_t Register;
 
 		/**
 		 * @brief Read multiple SPI bytes from the ADS124S08.
@@ -111,6 +110,56 @@ public:
 	 * @note Refer to the ADS124S08 §9.5.3.2 "WAKEUP" for details.
 	 */
 	std::optional<Register> wakeup() noexcept;
+
+	/**
+	 * @brief Send the POWERDOWN command to the ADS124S08 to enter power-down mode.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 * @note Refer to the ADS124S08 §9.5.3.3 "POWERDOWN" for details.
+	 */
+	std::optional<Register> powerdown() noexcept;
+
+	/**
+	 * @brief Send the RESET command to the ADS124S08 to reset the device.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> reset() noexcept;
+
+	/**
+	 * @brief Send the START command to the ADS124S08 to start a conversion.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> start() noexcept;
+
+	/**
+	 * @brief Send the STOP command to the ADS124S08 to stop a conversion.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> stop() noexcept;
+
+	/**
+	 * @brief Perform system offset calibration.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> offsetCalibrate() noexcept;
+
+	/**
+	 * @brief Perform system gain calibration.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> gainCalibrate() noexcept;
+
+	/**
+	 * @brief Perform self offset calibration.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 */
+	std::optional<Register> selfOffsetCalibrate() noexcept;
 
 	/**
 	 * @brief Perform a RREG operation to read registers from the ADS124S08.

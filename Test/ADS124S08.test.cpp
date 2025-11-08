@@ -13,9 +13,10 @@ using ::testing::Return;
 
 using std::nullopt;
 
-using Register		 = ADS124S08::SPI::Register;
-using Address		 = ADS124S08::SPI::Address;
-using ControlCommand = ADS124S08::SPI::ControlCommand;
+using Register			 = ADS124S08::SPI::Register;
+using Address			 = ADS124S08::SPI::Address;
+using ControlCommand	 = ADS124S08::SPI::ControlCommand;
+using CalibrationCommand = ADS124S08::SPI::CalibrationCommand;
 
 static constexpr std::array<ControlCommand, 6> ControlCommands = {
 	ControlCommand::NOP,
@@ -118,6 +119,18 @@ class ADS124S08_Test : public ::testing::Test {
 public:
 	MockSPI	  mockSPI{};
 	ADS124S08 adc{mockSPI};
+
+	std::array<std::pair<Command, std::function<std::optional<uint8_t>()>>, 8u> singleByteCommands =
+		{{
+			{ControlCommand::WAKEUP, [&]() { return adc.wakeup(); }},
+			{ControlCommand::POWERDOWN, [&]() { return adc.powerdown(); }},
+			{ControlCommand::RESET, [&]() { return adc.reset(); }},
+			{ControlCommand::START, [&]() { return adc.start(); }},
+			{ControlCommand::STOP, [&]() { return adc.stop(); }},
+			{CalibrationCommand::SYS_OFFSET_CAL, [&]() { return adc.offsetCalibrate(); }},
+			{CalibrationCommand::SYS_GAIN_CAL, [&]() { return adc.gainCalibrate(); }},
+			{CalibrationCommand::SELF_OFFSET_CAL, [&]() { return adc.selfOffsetCalibrate(); }},
+		}};
 };
 
 static constexpr uint8_t MAX_TEST_CASES = 19;
@@ -275,19 +288,20 @@ TEST_F(ADS124S08_Test, rregReturnsNulloptWhenSpiFails) {
 	EXPECT_FALSE(result.has_value());
 }
 
-TEST_F(ADS124S08_Test, wakeupSendsWakeupCommand) {
-	EXPECT_CALL(mockSPI, write(testing::Pointee(0x02), 1u)).WillOnce(Return(1u));
+TEST_F(ADS124S08_Test, singleByteCommandsNormallySucceed) {
+	for (const auto &cmdPair : singleByteCommands) {
+		EXPECT_CALL(mockSPI, write(_, Eq(1u))).WillOnce(Return(1u));
 
-	auto result = adc.wakeup();
-
-	EXPECT_TRUE(result.has_value());
-	EXPECT_EQ(result.value(), 0x02u);
+		const auto result = cmdPair.second();
+		EXPECT_TRUE(result.has_value());
+		EXPECT_EQ(result.value(), static_cast<Register>(cmdPair.first));
+	}
 }
 
 TEST_F(ADS124S08_Test, wakeupReturnsNulloptWhenSpiFails) {
-	mockSPI.disableMOSI();
-
-	auto result = adc.wakeup();
-
-	EXPECT_FALSE(result.has_value());
+	for (const auto &cmdPair : singleByteCommands) {
+		EXPECT_CALL(mockSPI, write(_, Eq(1u))).WillOnce(Return(nullopt));
+		const auto result = cmdPair.second();
+		EXPECT_FALSE(result.has_value());
+	}
 }
