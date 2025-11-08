@@ -9,8 +9,9 @@ public:
 	/**
 	 * @brief SPI interface for the ADS124S08.
 	 *
-	 * This class defines the interface for SPI communication with the ADS124S08 analog-to-digital converter.
-	 * The user must provide concrete implementations for reading, writing, and simultaneous read/write operations.
+	 * This class defines the interface for SPI communication with the ADS124S08 analog-to-digital
+	 * converter. The user must provide concrete implementations for reading, writing, and
+	 * simultaneous read/write operations.
 	 */
 	class SPI {
 	public:
@@ -74,7 +75,8 @@ public:
 		 * @param count The number of registers to write.
 		 * @return The number of bytes written, or std::nullopt if any write failed.
 		 */
-		virtual std::optional<uint8_t> write(const Register *const buffer, uint8_t count) noexcept = 0;
+		virtual std::optional<uint8_t>
+		write(const Register *const buffer, uint8_t count) noexcept = 0;
 
 		/**
 		 * @brief Simultaneously read and write multiple SPI bytes to/from the ADS124S08.
@@ -82,10 +84,14 @@ public:
 		 * @param txBuffer A reference to an array containing the register values to write.
 		 * @param rxBuffer A reference to an array to store the register values read.
 		 * @param count The number of registers to read/write.
-		 * @return A tuple containing the number of bytes read and written respectively, or `std::nullopt` if any operation failed.
+		 * @return A tuple containing the number of bytes read and written respectively, or
+		 * `std::nullopt` if any operation failed.
 		 */
-		virtual std::optional<std::tuple<uint8_t, uint8_t>>
-		readWrite(const Register *const txBuffer, Register *const rxBuffer, uint8_t count) noexcept = 0;
+		virtual std::optional<std::tuple<uint8_t, uint8_t>> readWrite(
+			const Register *const txBuffer,
+			Register *const		  rxBuffer,
+			uint8_t				  count
+		) noexcept = 0;
 
 		virtual ~SPI() = default;
 	};
@@ -111,9 +117,16 @@ public:
 	 *
 	 * @param startAddress The starting register address to read from.
 	 * @param count The number of registers to read.
-	 * @param buffer A pointer to an array where the read register values will be stored. Only needed if count > 1.
+	 * @param buffer A pointer to an array where the read register values will be stored. Only
+	 * needed if count > 1.
 	 * @return The first register value read if successful, `std::nullopt` otherwise.
+	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or the
+	 * ADC SPI timeout must elapse before the next command will be accepted.
 	 * @note Refer to the ADS124S08 §9.5.3.11 "RREG" for details.
 	 */
-	std::optional<Register> rreg(SPI::Address startAddress, uint8_t count = 1, SPI::Register *const buffer = nullptr) noexcept;
+	std::optional<Register> rreg(
+		SPI::Address		 startAddress,
+		uint8_t				 count	= 1,
+		SPI::Register *const buffer = nullptr
+	) noexcept;
 };

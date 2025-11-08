@@ -38,3 +38,10 @@ std::optional<ADS124S08::Register> ADS124S08::rreg(
 	}
 	return std::nullopt;
 }
+
+std::optional<ADS124S08::Register> ADS124S08::wakeup() noexcept {
+	const auto mosi		   = static_cast<uint8_t>(SPI::ControlCommand::WAKEUP);
+	const auto writeResult = spi.write(&mosi, 1u);
+	if (writeResult) return mosi;
+	else return std::nullopt;
+}

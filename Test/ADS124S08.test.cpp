@@ -1,6 +1,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#define ADS124S08_GTEST_TESTING
+
 #include "../Src/ADS124S08.cpp"
 
 #include <algorithm>
@@ -269,6 +271,23 @@ TEST_F(ADS124S08_Test, rregReturnsNulloptWhenSpiFails) {
 	Register readBuffer[testCase.count];
 
 	auto result = adc.rreg(testCase.address, testCase.count, readBuffer);
+
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, wakeupSendsWakeupCommand) {
+	EXPECT_CALL(mockSPI, write(testing::Pointee(0x02), 1u)).WillOnce(Return(1u));
+
+	auto result = adc.wakeup();
+
+	EXPECT_TRUE(result.has_value());
+	EXPECT_EQ(result.value(), 0x02u);
+}
+
+TEST_F(ADS124S08_Test, wakeupReturnsNulloptWhenSpiFails) {
+	mockSPI.disableMOSI();
+
+	auto result = adc.wakeup();
 
 	EXPECT_FALSE(result.has_value());
 }
