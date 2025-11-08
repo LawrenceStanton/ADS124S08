@@ -5,8 +5,6 @@
 
 #include "../Src/ADS124S08.cpp"
 
-#include <algorithm>
-
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Return;
@@ -256,10 +254,12 @@ TEST_F(ADS124S08_Test, rregChecksCountRange) {
 	EXPECT_CALL(mockSPI, read(_, _)).Times(0);
 	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
 
-	auto resultLow = adc.rreg(Address::ID, 0x00u, nullptr);
+	Register buffer[0x12u];
+
+	auto resultLow = adc.rreg(Address::ID, 0x00u, buffer);
 	EXPECT_FALSE(resultLow.has_value());
 
-	auto resultHigh = adc.rreg(Address::ID, 0x12u, nullptr);
+	auto resultHigh = adc.rreg(Address::ID, 0x13u, buffer);
 	EXPECT_FALSE(resultHigh.has_value());
 }
 
@@ -284,6 +284,78 @@ TEST_F(ADS124S08_Test, rregReturnsNulloptWhenSpiFails) {
 	Register readBuffer[testCase.count];
 
 	auto result = adc.rreg(testCase.address, testCase.count, readBuffer);
+
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, wregNormallyWritesExpectedValues) {
+	mockSPI.delegateToFakes(nullptr);
+
+	for (const auto &testCase : rregCases) {
+		auto result = adc.wreg(testCase.address, testCase.count, testCase.expectedValues.data());
+
+		EXPECT_TRUE(result.has_value());
+		EXPECT_EQ(result.value(), testCase.expectedValues[0]);
+	}
+}
+
+TEST_F(ADS124S08_Test, wregSingleByteOverloadWritesExpectedValue) {
+	mockSPI.delegateToFakes(nullptr);
+
+	for (const auto &testCase : rregCases) {
+		if (testCase.count != 1u) {
+			continue; // Only test single-byte writes here
+		}
+
+		auto result = adc.wreg(testCase.address, testCase.expectedValues[0]);
+
+		EXPECT_TRUE(result.has_value());
+		EXPECT_EQ(result.value(), testCase.expectedValues[0]);
+	}
+}
+
+TEST_F(ADS124S08_Test, wregChecksForNullptrBuffer) {
+	EXPECT_CALL(mockSPI, write(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, read(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.wreg(Address::ID, 2u, nullptr);
+
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, wregChecksCountRange) {
+	EXPECT_CALL(mockSPI, write(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, read(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	Register buffer[0x12u] = {0};
+
+	auto resultLow = adc.wreg(Address::ID, 0x00u, buffer);
+	EXPECT_FALSE(resultLow.has_value());
+
+	auto resultHigh = adc.wreg(Address::ID, 0x13u, buffer);
+	EXPECT_FALSE(resultHigh.has_value());
+}
+
+TEST_F(ADS124S08_Test, wregChecksAddressRange) {
+	EXPECT_CALL(mockSPI, write(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, read(_, _)).Times(0);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	Register buffer[2u] = {0};
+
+	auto result = adc.wreg(static_cast<Address>(0x12u), 1u, buffer);
+	EXPECT_FALSE(result.has_value());
+	result = adc.wreg(static_cast<Address>(0x12u), 0x00u);
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, wregReturnsNulloptWhenSpiFails) {
+	const auto &testCase = rregCases[0u];
+	mockSPI.disableSPI();
+
+	auto result = adc.wreg(testCase.address, testCase.count, testCase.expectedValues.data());
 
 	EXPECT_FALSE(result.has_value());
 }

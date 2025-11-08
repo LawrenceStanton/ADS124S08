@@ -99,6 +99,7 @@ private:
 	SPI &spi;
 
 public:
+	using Address  = SPI::Address;
 	using Register = SPI::Register;
 
 	explicit constexpr ADS124S08(SPI &spi) : spi(spi) {}
@@ -174,8 +175,31 @@ public:
 	 * @note Refer to the ADS124S08 §9.5.3.11 "RREG" for details.
 	 */
 	std::optional<Register> rreg(
-		SPI::Address		 startAddress,
-		uint8_t				 count	= 1,
-		SPI::Register *const buffer = nullptr
+		Address			startAddress, //
+		uint8_t			count  = 1,
+		Register *const buffer = nullptr
+	) noexcept;
+
+	/**
+	 * @brief Perform a WREG operation to write registers to the ADS124S08.
+	 *
+	 * @param startAddress The starting register address to write to.
+	 * @param count The number of registers to write.
+	 * @param buffer A pointer to an array containing the register values to write.
+	 * @return The first register value written if successful, `std::nullopt` otherwise.
+	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or the
+	 * ADC SPI timeout must elapse before the next command will be accepted.
+	 * @note Writing to certain registers may reset the digital filter and start a new conversion.
+	 * @note Refer to the ADS124S08 §9.5.3.12 "WREG" for details.
+	 */
+	std::optional<Register> wreg(
+		Address				  startAddress, //
+		uint8_t				  count,
+		const Register *const buffer
+	) noexcept;
+
+	std::optional<Register> wreg(
+		Address			startAddress, //
+		const Register &value
 	) noexcept;
 };

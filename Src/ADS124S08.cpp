@@ -1,5 +1,6 @@
 #include "ADS124S08.hpp"
 
+#include <algorithm>
 #include <array>
 
 using Address		 = ADS124S08::SPI::Address;
@@ -9,14 +10,20 @@ using ControlCommand = ADS124S08::SPI::ControlCommand;
 
 constexpr Address ADS124S08_MAX_REGISTER_ADDRESS = static_cast<Address>(0x11u);
 
+static constexpr bool
+validateAddressRange(const ADS124S08::SPI::Address startAddress, const uint8_t count) noexcept {
+	if (count < 1u || count > 18u) return false;
+	if (startAddress + count > ADS124S08_MAX_REGISTER_ADDRESS + 1) return false;
+	return true;
+}
+
 std::optional<ADS124S08::Register> ADS124S08::rreg(
 	const ADS124S08::SPI::Address startAddress,
 	const uint8_t				  count,
 	SPI::Register *const		  buffer
 ) noexcept {
 	// Range checks
-	if (count < 1u || count > 18) return std::nullopt;
-	if (startAddress + count > ADS124S08_MAX_REGISTER_ADDRESS + 1) return std::nullopt;
+	if (!validateAddressRange(startAddress, count)) return std::nullopt;
 
 	// Nullptr check for single register read
 	if (buffer == nullptr) {
@@ -24,8 +31,8 @@ std::optional<ADS124S08::Register> ADS124S08::rreg(
 	}
 
 	std::array<uint8_t, 2> mosi = {
-		static_cast<uint8_t>(0x20u | (startAddress)), // RREG command
-		(uint8_t)(count - 1u),						  // Number of registers to read minus one
+		(uint8_t)(0x20u | startAddress), // RREG command
+		(uint8_t)(count - 1u),			 // Number of registers to read minus one
 	};
 
 	Register		reg0 = 0;
@@ -35,9 +42,36 @@ std::optional<ADS124S08::Register> ADS124S08::rreg(
 
 	if (writeResult) {
 		const auto readResult = spi.read(miso, count);
-		if (readResult) { return std::optional(miso[0]); }
+		if (readResult) { return miso[0]; }
 	}
 	return std::nullopt;
+}
+
+std::optional<ADS124S08::Register> ADS124S08::wreg(
+	const ADS124S08::SPI::Address startAddress,
+	const uint8_t				  count,
+	const SPI::Register *const	  buffer
+) noexcept {
+	// Range checks
+	if (!validateAddressRange(startAddress, count)) return std::nullopt;
+	if (buffer == nullptr) return std::nullopt;
+
+	Register mosi[2 + count];
+
+	mosi[0] = (uint8_t)(0x40u | startAddress); // WREG command
+	mosi[1] = (uint8_t)(count - 1u);		   // Number of registers to write minus one
+	std::copy_n(buffer, count, &mosi[2]);
+
+	const auto writeResult = spi.write(mosi, 2u + count);
+
+	if (writeResult) {
+		return mosi[2];
+	} else return std::nullopt;
+}
+
+std::optional<ADS124S08::Register>
+ADS124S08::wreg(const ADS124S08::SPI::Address startAddress, const SPI::Register &value) noexcept {
+	return wreg(startAddress, 1u, &value);
 }
 
 static std::optional<Register>
