@@ -82,7 +82,7 @@ public:
 		 * @param txBuffer A reference to an array containing the register values to write.
 		 * @param rxBuffer A reference to an array to store the register values read.
 		 * @param count The number of registers to read/write.
-		 * @return A tuple containing the number of bytes read and written respectively, or std::nullopt if any operation failed.
+		 * @return A tuple containing the number of bytes read and written respectively, or `std::nullopt` if any operation failed.
 		 */
 		virtual std::optional<std::tuple<uint8_t, uint8_t>>
 		readWrite(const Register *const txBuffer, Register *const rxBuffer, uint8_t count) noexcept = 0;
@@ -94,5 +94,26 @@ private:
 	SPI &spi;
 
 public:
+	using Register = SPI::Register;
+
 	explicit constexpr ADS124S08(SPI &spi) : spi(spi) {}
+
+	/**
+	 * @brief Send the WAKEUP command to the ADS124S08 to exit power-down mode.
+	 *
+	 * @return The command sent if successful, `std::nullopt` otherwise.
+	 * @note Refer to the ADS124S08 §9.5.3.2 "WAKEUP" for details.
+	 */
+	std::optional<Register> wakeup() noexcept;
+
+	/**
+	 * @brief Perform a RREG operation to read registers from the ADS124S08.
+	 *
+	 * @param startAddress The starting register address to read from.
+	 * @param count The number of registers to read.
+	 * @param buffer A pointer to an array where the read register values will be stored. Only needed if count > 1.
+	 * @return The first register value read if successful, `std::nullopt` otherwise.
+	 * @note Refer to the ADS124S08 §9.5.3.11 "RREG" for details.
+	 */
+	std::optional<Register> rreg(SPI::Address startAddress, uint8_t count = 1, SPI::Register *const buffer = nullptr) noexcept;
 };
