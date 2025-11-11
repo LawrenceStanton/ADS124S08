@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @brief Configuration representation of the ADS124S08 REF register (Address 0x05).
  *

@@ -1,3 +1,5 @@
+#pragma once
+
 struct ADS124S08::SPI_Register_I {
 public:
 	/**

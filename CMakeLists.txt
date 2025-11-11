@@ -39,9 +39,12 @@ if(NOT CMAKE_CROSSCOMPILING)
 
 	set(TEST_EXECUTABLE ${PROJECT_NAME}_Test)
 
+	file(GLOB TEST_SOURCE_FILES
+		Test/*.test.cpp
+	)
+
 	add_executable(${TEST_EXECUTABLE}
-		Test/ADS124S08.test.cpp
-		Test/ADS124S08_REF.test.cpp
+		${TEST_SOURCE_FILES}
 	)
 
 	target_compile_options(${TEST_EXECUTABLE} PRIVATE
@@ -64,10 +67,14 @@ if(NOT CMAKE_CROSSCOMPILING)
 	if(ADS124S08_CODE_COVERAGE)
 		set(GCOVR_COMMAND gcovr --root ${CMAKE_SOURCE_DIR} --filter '.*/ADS124S08/.*' --exclude '.*\.test\..*' ${CMAKE_CURRENT_BINARY_DIR})
 		set(SILENT_GCOVR_COMMAND ./${TEST_EXECUTABLE} > /dev/null)
+	
+		add_custom_command(TARGET ${TEST_EXECUTABLE} PRE_BUILD
+			COMMENT "Cleaning previous gcov data files for ADS124S08 Tests..."
+			COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST_EXECUTABLE}.dir -type f -name "*.gcda" -delete
+		)
 
 		add_custom_command(TARGET ${TEST_EXECUTABLE} POST_BUILD
 			COMMENT "Running gcovr Code Coverage for ADS124S08 Tests..."
-			COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST_EXECUTABLE}.dir -type f -name "*.gcda" -delete
 			COMMAND ${SILENT_GCOVR_COMMAND} && ${GCOVR_COMMAND} || echo "Code coverage failed. All tests must pass for code coverage to run."
 		)
 	endif()
