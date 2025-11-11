@@ -377,3 +377,27 @@ TEST_F(ADS124S08_Test, wakeupReturnsNulloptWhenSpiFails) {
 		EXPECT_FALSE(result.has_value());
 	}
 }
+
+TEST_F(ADS124S08_Test, setRegistersNormallySucceedsAndReturnsWrittenValue) {
+	class MockStructRegister : public ADS124S08::SPI_Register_I {
+	private:
+		Register regValue;
+
+	public:
+		MockStructRegister(Register val) : regValue(val) {}
+
+		virtual Register toRegister(void) const override { return regValue; }
+		virtual Address	 getAddress(void) const override { return static_cast<Address>(0x00u); }
+		virtual Register getResetValue(void) const override { return 0xFFu; }
+	};
+
+	MockStructRegister reg1(0xA5u);
+
+	mockSPI.delegateToFakes(nullptr);
+
+	EXPECT_CALL(mockSPI, write(_, _)).Times(1);
+
+	auto result = adc.setRegister(reg1);
+	EXPECT_TRUE(result.has_value());
+	EXPECT_EQ(result.value(), 0xA5u);
+}

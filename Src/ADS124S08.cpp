@@ -8,11 +8,12 @@ using Register		 = ADS124S08::SPI::Register;
 using Command		 = ADS124S08::SPI::Command;
 using ControlCommand = ADS124S08::SPI::ControlCommand;
 
-constexpr Address ADS124S08_MAX_REGISTER_ADDRESS = static_cast<Address>(0x11u);
+static constexpr Address ADS124S08_MAX_REGISTER_ADDRESS = static_cast<Address>(0x11u);
+static constexpr uint8_t ADS124S08_MAX_REGISTER_COUNT	= 18u;
 
 static constexpr bool
 validateAddressRange(const ADS124S08::SPI::Address startAddress, const uint8_t count) noexcept {
-	if (count < 1u || count > 18u) return false;
+	if (count < 1u || count > ADS124S08_MAX_REGISTER_COUNT) return false;
 	if (startAddress + count > ADS124S08_MAX_REGISTER_ADDRESS + 1) return false;
 	return true;
 }
@@ -21,7 +22,7 @@ std::optional<ADS124S08::Register> ADS124S08::rreg(
 	const ADS124S08::SPI::Address startAddress,
 	const uint8_t				  count,
 	SPI::Register *const		  buffer
-) noexcept {
+) const noexcept {
 	// Range checks
 	if (!validateAddressRange(startAddress, count)) return std::nullopt;
 
@@ -51,12 +52,14 @@ std::optional<ADS124S08::Register> ADS124S08::wreg(
 	const ADS124S08::SPI::Address startAddress,
 	const uint8_t				  count,
 	const SPI::Register *const	  buffer
-) noexcept {
+) const noexcept {
 	// Range checks
+	if (count > ADS124S08_MAX_REGISTER_COUNT) return std::nullopt;
 	if (!validateAddressRange(startAddress, count)) return std::nullopt;
 	if (buffer == nullptr) return std::nullopt;
 
-	Register mosi[2 + count];
+	// Allocating excess to maintain STATIC stack usage
+	Register mosi[2 + ADS124S08_MAX_REGISTER_COUNT];
 
 	mosi[0] = (uint8_t)(0x40u | startAddress); // WREG command
 	mosi[1] = (uint8_t)(count - 1u);		   // Number of registers to write minus one
@@ -69,8 +72,10 @@ std::optional<ADS124S08::Register> ADS124S08::wreg(
 	} else return std::nullopt;
 }
 
-std::optional<ADS124S08::Register>
-ADS124S08::wreg(const ADS124S08::SPI::Address startAddress, const SPI::Register &value) noexcept {
+std::optional<ADS124S08::Register> ADS124S08::wreg(
+	const ADS124S08::SPI::Address startAddress,
+	const SPI::Register			 &value
+) const noexcept {
 	return wreg(startAddress, 1u, &value);
 }
 
@@ -111,4 +116,9 @@ std::optional<ADS124S08::Register> ADS124S08::gainCalibrate() noexcept {
 
 std::optional<ADS124S08::Register> ADS124S08::selfOffsetCalibrate() noexcept {
 	return writeSingleByteCommand(spi, SPI::CalibrationCommand::SELF_OFFSET_CAL);
+}
+
+std::optional<Register> ADS124S08::setRegister(const SPI_Register_I &reg) const noexcept {
+	Register value = reg.toRegister();
+	return wreg(reg.getAddress(), value);
 }

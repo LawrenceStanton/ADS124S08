@@ -102,6 +102,27 @@ public:
 	using Address  = SPI::Address;
 	using Register = SPI::Register;
 
+	struct SPI_Register_I;
+
+	struct ID;
+	struct STATUS;
+	struct INPMUX;
+	struct PGA;
+	struct DATARATE;
+	struct REF;
+	struct IDACMAG;
+	struct IDACMUX;
+	struct VBIAS;
+	struct SYS;
+	struct OFCAL0;
+	struct OFCAL1;
+	struct OFCAL2;
+	struct FSCAL0;
+	struct FSCAL1;
+	struct FSCAL2;
+	struct GPIODAT;
+	struct GPIOCON;
+
 	explicit constexpr ADS124S08(SPI &spi) : spi(spi) {}
 
 	/**
@@ -162,6 +183,8 @@ public:
 	 */
 	std::optional<Register> selfOffsetCalibrate() noexcept;
 
+	std::optional<Register> setRegister(const SPI_Register_I &reg) const noexcept;
+
 	/**
 	 * @brief Perform a RREG operation to read registers from the ADS124S08.
 	 *
@@ -170,15 +193,15 @@ public:
 	 * @param buffer A pointer to an array where the read register values will be stored. Only
 	 * needed if count > 1.
 	 * @return The first register value read if successful, `std::nullopt` otherwise.
-	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or the
-	 * ADC SPI timeout must elapse before the next command will be accepted.
+	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or
+	 * the ADC SPI timeout must elapse before the next command will be accepted.
 	 * @note Refer to the ADS124S08 §9.5.3.11 "RREG" for details.
 	 */
 	std::optional<Register> rreg(
 		Address			startAddress, //
 		uint8_t			count  = 1,
 		Register *const buffer = nullptr
-	) noexcept;
+	) const noexcept;
 
 	/**
 	 * @brief Perform a WREG operation to write registers to the ADS124S08.
@@ -196,10 +219,15 @@ public:
 		Address				  startAddress, //
 		uint8_t				  count,
 		const Register *const buffer
-	) noexcept;
+	) const noexcept;
 
 	std::optional<Register> wreg(
 		Address			startAddress, //
 		const Register &value
-	) noexcept;
+	) const noexcept;
 };
+
+#include "Private/ADS124S08_SPI_Register_I.hpp"
+
+#include "Private/ADS124S08_REF.hpp"
+#include "Private/ADS124S08_STATUS.hpp"

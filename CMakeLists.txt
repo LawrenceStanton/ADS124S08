@@ -9,9 +9,14 @@ enable_language(CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(${PROJECT_NAME} STATIC
-	Src/ADS124S08.cpp
+file(GLOB SOURCE_FILES
+	Src/*.cpp
 )
+
+add_library(${PROJECT_NAME} STATIC
+	${SOURCE_FILES}
+)
+
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Inc
@@ -36,6 +41,7 @@ if(NOT CMAKE_CROSSCOMPILING)
 
 	add_executable(${TEST_EXECUTABLE}
 		Test/ADS124S08.test.cpp
+		Test/ADS124S08_REF.test.cpp
 	)
 
 	target_compile_options(${TEST_EXECUTABLE} PRIVATE
@@ -56,11 +62,12 @@ if(NOT CMAKE_CROSSCOMPILING)
 	gtest_discover_tests(${TEST_EXECUTABLE})
 
 	if(ADS124S08_CODE_COVERAGE)
-		set(GCOVR_COMMAND gcovr --root ${CMAKE_SOURCE_DIR} --gcov-executable gcov-13 --filter '.*/ADS124S08/.*' --exclude '.*\.test\..*' ${CMAKE_CURRENT_BINARY_DIR})
+		set(GCOVR_COMMAND gcovr --root ${CMAKE_SOURCE_DIR} --filter '.*/ADS124S08/.*' --exclude '.*\.test\..*' ${CMAKE_CURRENT_BINARY_DIR})
 		set(SILENT_GCOVR_COMMAND ./${TEST_EXECUTABLE} > /dev/null)
 
 		add_custom_command(TARGET ${TEST_EXECUTABLE} POST_BUILD
 			COMMENT "Running gcovr Code Coverage for ADS124S08 Tests..."
+			COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST_EXECUTABLE}.dir -type f -name "*.gcda" -delete
 			COMMAND ${SILENT_GCOVR_COMMAND} && ${GCOVR_COMMAND} || echo "Code coverage failed. All tests must pass for code coverage to run."
 		)
 	endif()
