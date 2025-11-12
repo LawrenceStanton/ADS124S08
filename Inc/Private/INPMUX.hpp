@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @brief Input multiplexer configuration for the ADS124S08.
+ *
+ */
 struct ADS124S08::INPMUX : SPI_Register_I {
 private:
 	static const Address  ADDRESS{0x02u};
@@ -9,19 +13,6 @@ private:
 	Register MUXN : 4; // Negative Input Channel Selection
 
 public:
-	virtual Register toRegister(void) const override;
-
-	INPMUX(Register val = INPMUX::RESET_VALUE);
-
-#ifdef ADS124S08_GTEST_TESTING
-	//? Only to be used for unit testing
-	constexpr INPMUX(const std::array<Register, 2> &vals);
-
-	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister);
-#endif
-
-	virtual ~INPMUX() = default;
-
 	enum class InputSelect : Register {
 		AIN0   = 0b0000u,
 		AIN1   = 0b0001u,
@@ -38,6 +29,21 @@ public:
 		AINCOM = 0b1100u,
 		// Reserved 0b1101u - 0b1110u
 	};
+
+	INPMUX(Register val = INPMUX::RESET_VALUE);
+	INPMUX(InputSelect posChannel, InputSelect negChannel);
+
+#ifdef ADS124S08_GTEST_TESTING
+	//? Only to be used for unit testing
+	constexpr INPMUX(const std::array<Register, 2> &vals);
+
+	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister);
+	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromInputSelect);
+#endif
+
+	virtual ~INPMUX() = default;
+
+	virtual Register toRegister(void) const override;
 
 	INPMUX &setPositiveInputChannel(InputSelect channel);
 

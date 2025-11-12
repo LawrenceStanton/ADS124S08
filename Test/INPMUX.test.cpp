@@ -35,6 +35,27 @@ TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
 	}
 }
 
+TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromInputSelect) {
+	const std::array<
+		std::pair<
+			std::pair<INPMUX::InputSelect, INPMUX::InputSelect>,
+			std::pair<Register, Register>>,
+		4>
+		testCases = {{
+			{{INPMUX::InputSelect::AIN0, INPMUX::InputSelect::AINCOM}, {0b0000u, 0b1100u}},
+			{{INPMUX::InputSelect::AIN3, INPMUX::InputSelect::AIN7}, {0b0011u, 0b0111u}},
+			{{INPMUX::InputSelect::AIN5, INPMUX::InputSelect::AIN2}, {0b0101u, 0b0010u}},
+			{{INPMUX::InputSelect::AIN10, INPMUX::InputSelect::AIN1}, {0b1010u, 0b0001u}},
+		}};
+
+	for (const auto &testCase : testCases) {
+		const INPMUX &inpmux = INPMUX(testCase.first.first, testCase.first.second);
+
+		EXPECT_EQ(testCase.second.first, inpmux.MUXP);
+		EXPECT_EQ(testCase.second.second, inpmux.MUXN);
+	}
+}
+
 void testSetInputChannel(
 	INPMUX												  &inpmux,
 	std::function<INPMUX &(INPMUX &, INPMUX::InputSelect)> setInputChannel,

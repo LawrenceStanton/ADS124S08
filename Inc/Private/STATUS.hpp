@@ -60,7 +60,7 @@ public:
 	inline FL_REF_LVL get_FL_REF_L0(void) const { return static_cast<FL_REF_LVL>(FL_REF_L0); }
 
 #ifdef ADS124S08_GTEST_TESTING
-	friend class ADS124S08_STATUS_Test;
-	FRIEND_TEST(ADS124S08_STATUS_Test, constructor_InitializesFieldsCorrectly_FromRegister);
+	friend class STATUS_Test;
+	FRIEND_TEST(STATUS_Test, constructor_InitializesFieldsCorrectly_FromRegister);
 #endif
 };

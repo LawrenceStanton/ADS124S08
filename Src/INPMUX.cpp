@@ -22,6 +22,10 @@ INPMUX::INPMUX(Register val)
 	: MUXP{static_cast<Register>((val >> 4u) & 0x0Fu)},
 	  MUXN{static_cast<Register>((val >> 0u) & 0x0Fu)} {}
 
+INPMUX::INPMUX(InputSelect posChannel, InputSelect negChannel)
+	: MUXP{static_cast<Register>(posChannel)}, //
+	  MUXN{static_cast<Register>(negChannel)} {}
+
 INPMUX &INPMUX::setPositiveInputChannel(InputSelect channel) {
 	MUXP = static_cast<Register>(channel);
 	return *this;

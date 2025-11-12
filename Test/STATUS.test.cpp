@@ -7,7 +7,7 @@
 using STATUS   = ADS124S08::STATUS;
 using Register = ADS124S08::Register;
 
-TEST(ADS124S08_STATUS_Test, toRegister_AlwaysReturnsZero) {
+TEST(STATUS_Test, toRegister_AlwaysReturnsZero) {
 	const STATUS testCases[] = {
 		STATUS(0x00u),
 		STATUS(0x80u),
@@ -21,7 +21,7 @@ TEST(ADS124S08_STATUS_Test, toRegister_AlwaysReturnsZero) {
 	}
 }
 
-TEST(ADS124S08_STATUS_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
+TEST(STATUS_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
 	const std::pair<Register, std::array<Register, 8>> testCases[] = {
 		{0x00u, {0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b0u}},
 		{0x01u, {0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b0u, 0b1u}},
@@ -45,7 +45,7 @@ TEST(ADS124S08_STATUS_Test, constructor_InitializesFieldsCorrectly_FromRegister)
 	}
 }
 
-TEST(ADS124S08_STATUS_Test, gettersReturnExpectedEnumValues) {
+TEST(STATUS_Test, gettersReturnExpectedEnumValues) {
 	STATUS reg{0x00};
 
 	EXPECT_EQ(reg.get_FL_POR(), STATUS::POR_Flag::CLEARED);
@@ -68,12 +68,12 @@ TEST(ADS124S08_STATUS_Test, gettersReturnExpectedEnumValues) {
 	EXPECT_EQ(reg2.get_FL_REF_L0(), STATUS::FL_REF_LVL::NOT_EXCEEDED);
 }
 
-TEST(ADS124S08_STATUS_Test, getAddressReturnsExpectedValue) {
+TEST(STATUS_Test, getAddressReturnsExpectedValue) {
 	STATUS status{};
 	EXPECT_EQ(0x01u, status.getAddress());
 }
 
-TEST(ADS124S08_STATUS_Test, getResetValueReturnsExpectedValue) {
+TEST(STATUS_Test, getResetValueReturnsExpectedValue) {
 	STATUS status{};
 	EXPECT_EQ(0x80u, status.getResetValue());
 }
