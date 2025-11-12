@@ -27,7 +27,3 @@ public:
 	virtual Address	 getAddress(void) const override { return this->ADDRESS; }
 	virtual Register getResetValue(void) const override { return ID::RESET_VALUE; }
 };
-
-Register ADS124S08::ID::toRegister(void) const {
-	return static_cast<Register>(DEV_ID);
-}
