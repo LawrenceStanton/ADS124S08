@@ -187,6 +187,17 @@ TEST(ADS124S08_REF_Test, setInternalReferenceVoltageConfigSetsFieldCorrectly) {
 	EXPECT_EQ(0u, ref.toRegister() & nMask);
 }
 
+TEST(ADS124S08_REF_Test, settersReturnThisReference) {
+	REF ref(0x00u);
+
+	// Values don't care.
+	EXPECT_EQ(&ref, &ref.setReferenceMonitorConfig(REF::ReferenceMonitorConfig::DISABLED));
+	EXPECT_EQ(&ref, &ref.setPositiveRefBufferBypass(REF::BufferBypassConfig::ENABLED));
+	EXPECT_EQ(&ref, &ref.setNegativeRefBufferBypass(REF::BufferBypassConfig::ENABLED));
+	EXPECT_EQ(&ref, &ref.setReferenceInputSelection(REF::InternalReferenceSelect::REFP0_REFN0));
+	EXPECT_EQ(&ref, &ref.setInternalReferenceVoltageConfig(REF::IntRefVoltConfig::OFF));
+}
+
 TEST(ADS124S08_REF_Test, getAddressReturnsExpectedValue) {
 	REF ref{};
 	EXPECT_EQ(0x05u, ref.getAddress());
