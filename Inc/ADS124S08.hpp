@@ -227,12 +227,12 @@ public:
 	) const noexcept;
 };
 
-#include "Private/ADS124S08_SPI_Register_I.hpp"
+#include "Private/SPI_Register_I.hpp"
 
-#include "Private/ADS124S08_ID.hpp"
+#include "Private/ID.hpp"
 
-#include "Private/ADS124S08_STATUS.hpp"
+#include "Private/STATUS.hpp"
 
-#include "Private/ADS124S08_REF.hpp"
+#include "Private/REF.hpp"
 
-#include "Private/ADS124S08_INPMUX.hpp"
+#include "Private/INPMUX.hpp"

@@ -17,7 +17,7 @@ public:
 	//? Only to be used for unit testing
 	constexpr INPMUX(const std::array<Register, 2> &vals);
 
-	FRIEND_TEST(ADS124S08_INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister);
+	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister);
 #endif
 
 	virtual ~INPMUX() = default;

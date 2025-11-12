@@ -2,14 +2,14 @@
 
 #define ADS124S08_GTEST_TESTING
 
-#include "../Src/ADS124S08_REF.cpp"
+#include "../Src/REF.cpp"
 
 using REF	   = ADS124S08::REF;
 using Register = ADS124S08::Register;
 
 // class ADS124S08_REF_Test : public ::testing::Test {};
 
-TEST(ADS124S08_REF_Test, toRegister_PacksFieldsCorrectly) {
+TEST(REF_Test, toRegister_PacksFieldsCorrectly) {
 	const std::pair<Register, REF> testCases[] = {
 		{0x00u, REF({0b00u, 0b0u, 0b0u, 0b00u, 0b00u})},
 		{0x80u, REF({0b10u, 0b0u, 0b0u, 0b00u, 0b00u})},
@@ -23,7 +23,7 @@ TEST(ADS124S08_REF_Test, toRegister_PacksFieldsCorrectly) {
 	}
 }
 
-TEST(ADS124S08_REF_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
+TEST(REF_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
 	const std::pair<Register, std::array<Register, 5>> testCases[] = {
 		{0x00u, {0b00u, 0b0u, 0b0u, 0b00u, 0b00u}},
 		{0x01u, {0b00u, 0b0u, 0b0u, 0b00u, 0b01u}},
@@ -47,7 +47,7 @@ Register fl_ref_en(Register r) {
 	return (r >> 6U) & 0x03u;
 }
 
-TEST(ADS124S08_REF_Test, setReferenceMonitorConfigSetsFieldCorrectly) {
+TEST(REF_Test, setReferenceMonitorConfigSetsFieldCorrectly) {
 	REF	 ref(0x00u);
 	auto fl_ref_en = [](Register r) { return (r >> 6U) & 0x03u; };
 	auto nMask	   = ~static_cast<Register>(0b11u << 6u);
@@ -90,7 +90,7 @@ static void testSetRefBufferBypass(
 	EXPECT_EQ(0u, ref.toRegister() & nMask);
 }
 
-TEST(ADS124S08_REF_Test, setPositiveRefBufferBypassSetsFieldCorrectly) {
+TEST(REF_Test, setPositiveRefBufferBypassSetsFieldCorrectly) {
 	REF													 ref(0x00u);
 	std::function<REF &(REF &, REF::BufferBypassConfig)> call =
 		[](REF &ref, REF::BufferBypassConfig cfg) -> REF & {
@@ -104,7 +104,7 @@ TEST(ADS124S08_REF_Test, setPositiveRefBufferBypassSetsFieldCorrectly) {
 	);
 }
 
-TEST(ADS124S08_REF_Test, setNegativeRefBufferBypassSetsFieldCorrectly) {
+TEST(REF_Test, setNegativeRefBufferBypassSetsFieldCorrectly) {
 	REF													 ref(0x00u);
 	std::function<REF &(REF &, REF::BufferBypassConfig)> call =
 		[](REF &ref, REF::BufferBypassConfig cfg) -> REF & {
@@ -118,7 +118,7 @@ TEST(ADS124S08_REF_Test, setNegativeRefBufferBypassSetsFieldCorrectly) {
 	);
 }
 
-TEST(ADS124S08_REF_Test, setReferenceInputSelectionSetsFieldsCorrectly) {
+TEST(REF_Test, setReferenceInputSelectionSetsFieldsCorrectly) {
 	REF	 ref(0x00u);
 	auto refsel = [](Register r) { return (r >> 2U) & 0x03u; };
 	auto nMask	= ~static_cast<Register>(0b11u << 2u);
@@ -141,7 +141,8 @@ TEST(ADS124S08_REF_Test, setReferenceInputSelectionSetsFieldsCorrectly) {
 }
 
 TEST(
-	ADS124S08_REF_Test,
+
+	REF_Test,
 	setReferenceInputSelection_byDefaultDisablesRefBuffersWhenInternalSelected
 ) {
 	REF ref(0x00u);
@@ -165,7 +166,7 @@ TEST(
 	EXPECT_NE(0b1u, (ref.toRegister() >> 4u) & 0x01u);
 }
 
-TEST(ADS124S08_REF_Test, setInternalReferenceVoltageConfigSetsFieldCorrectly) {
+TEST(REF_Test, setInternalReferenceVoltageConfigSetsFieldCorrectly) {
 	REF	 ref(0x00u);
 	auto refcon = [](Register r) { return (r >> 0U) & 0x03u; };
 	auto nMask	= ~static_cast<Register>(0b11u << 0u);
@@ -187,7 +188,7 @@ TEST(ADS124S08_REF_Test, setInternalReferenceVoltageConfigSetsFieldCorrectly) {
 	EXPECT_EQ(0u, ref.toRegister() & nMask);
 }
 
-TEST(ADS124S08_REF_Test, settersReturnThisReference) {
+TEST(REF_Test, settersReturnThisReference) {
 	REF ref(0x00u);
 
 	// Values don't care.
@@ -198,12 +199,12 @@ TEST(ADS124S08_REF_Test, settersReturnThisReference) {
 	EXPECT_EQ(&ref, &ref.setInternalReferenceVoltageConfig(REF::IntRefVoltConfig::OFF));
 }
 
-TEST(ADS124S08_REF_Test, getAddressReturnsExpectedValue) {
+TEST(REF_Test, getAddressReturnsExpectedValue) {
 	REF ref{};
 	EXPECT_EQ(0x05u, ref.getAddress());
 }
 
-TEST(ADS124S08_REF_Test, getResetValueReturnsExpectedValue) {
+TEST(REF_Test, getResetValueReturnsExpectedValue) {
 	REF ref{};
 	EXPECT_EQ(0x10u, ref.getResetValue());
 }

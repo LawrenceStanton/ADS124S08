@@ -2,12 +2,12 @@
 
 #define ADS124S08_GTEST_TESTING
 
-#include "../Src/ADS124S08_INPMUX.cpp"
+#include "../Src/INPMUX.cpp"
 
 using INPMUX   = ADS124S08::INPMUX;
 using Register = ADS124S08::Register;
 
-TEST(ADS124S08_INPMUX_Test, toRegister_PacksFieldsCorrectly) {
+TEST(INPMUX_Test, toRegister_PacksFieldsCorrectly) {
 	const std::pair<Register, INPMUX> testCases[] = {
 		{0x00u, INPMUX({0b0000u, 0b0000u})},
 		{0xFFu, INPMUX({0b1111u, 0b1111u})},
@@ -20,7 +20,7 @@ TEST(ADS124S08_INPMUX_Test, toRegister_PacksFieldsCorrectly) {
 	}
 }
 
-TEST(ADS124S08_INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
+TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister) {
 	const std::pair<Register, std::array<Register, 2>> testCases[] = {
 		{0x00u, {0b0000u, 0b0000u}},
 		{0xFFu, {0b1111u, 0b1111u}},
@@ -57,7 +57,7 @@ void testSetInputChannel(
 	}
 }
 
-TEST(ADS124S08_INPMUX_Test, setPositiveInputChannelSetsFieldCorrectly) {
+TEST(INPMUX_Test, setPositiveInputChannelSetsFieldCorrectly) {
 	INPMUX												   inpmux(0x00u);
 	std::function<INPMUX &(INPMUX &, INPMUX::InputSelect)> call =
 		[](INPMUX &inpmux, INPMUX::InputSelect sel) -> INPMUX & {
@@ -71,7 +71,7 @@ TEST(ADS124S08_INPMUX_Test, setPositiveInputChannelSetsFieldCorrectly) {
 	);
 }
 
-TEST(ADS124S08_INPMUX_Test, setNegativeInputChannelSetsFieldCorrectly) {
+TEST(INPMUX_Test, setNegativeInputChannelSetsFieldCorrectly) {
 	INPMUX												   inpmux(0x00u);
 	std::function<INPMUX &(INPMUX &, INPMUX::InputSelect)> call =
 		[](INPMUX &inpmux, INPMUX::InputSelect sel) -> INPMUX & {
@@ -85,7 +85,7 @@ TEST(ADS124S08_INPMUX_Test, setNegativeInputChannelSetsFieldCorrectly) {
 	);
 }
 
-TEST(ADS124S08_INPMUX_Test, settersReturnReferenceToSelf) {
+TEST(INPMUX_Test, settersReturnReferenceToSelf) {
 	INPMUX inpmux(0x00u);
 
 	INPMUX &ref1 = inpmux.setPositiveInputChannel(INPMUX::InputSelect::AIN3);
@@ -95,10 +95,10 @@ TEST(ADS124S08_INPMUX_Test, settersReturnReferenceToSelf) {
 	EXPECT_EQ(&inpmux, &ref2);
 }
 
-TEST(ADS124S08_INPMUX_Test, getAddressReturnsCorrectAddress) {
+TEST(INPMUX_Test, getAddressReturnsCorrectAddress) {
 	EXPECT_EQ(0x02u, INPMUX().getAddress());
 }
 
-TEST(ADS124S08_INPMUX_Test, getResetValueReturnsCorrectResetValue) {
+TEST(INPMUX_Test, getResetValueReturnsCorrectResetValue) {
 	EXPECT_EQ(0x01u, INPMUX().getResetValue());
 }

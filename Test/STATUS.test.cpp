@@ -2,7 +2,7 @@
 
 #define ADS124S08_GTEST_TESTING
 
-#include "../Src/ADS124S08_STATUS.cpp"
+#include "../Src/STATUS.cpp"
 
 using STATUS   = ADS124S08::STATUS;
 using Register = ADS124S08::Register;

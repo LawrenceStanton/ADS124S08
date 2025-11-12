@@ -104,6 +104,6 @@ public:
 	virtual Register getResetValue(void) const override { return RESET_VALUE; }
 
 #ifdef ADS124S08_GTEST_TESTING
-	FRIEND_TEST(ADS124S08_REF_Test, constructor_InitializesFieldsCorrectly_FromRegister);
+	FRIEND_TEST(REF_Test, constructor_InitializesFieldsCorrectly_FromRegister);
 #endif
 };
