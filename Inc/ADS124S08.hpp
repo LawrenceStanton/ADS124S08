@@ -229,6 +229,8 @@ public:
 
 #include "Private/ADS124S08_SPI_Register_I.hpp"
 
+#include "Private/ADS124S08_ID.hpp"
+
 #include "Private/ADS124S08_STATUS.hpp"
 
 #include "Private/ADS124S08_REF.hpp"
