@@ -34,9 +34,6 @@ public:
 	INPMUX(InputSelect posChannel, InputSelect negChannel);
 
 #ifdef ADS124S08_GTEST_TESTING
-	//? Only to be used for unit testing
-	constexpr INPMUX(const std::array<Register, 2> &vals);
-
 	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromRegister);
 	FRIEND_TEST(INPMUX_Test, constructor_InitializesFieldsCorrectly_FromInputSelect);
 #endif

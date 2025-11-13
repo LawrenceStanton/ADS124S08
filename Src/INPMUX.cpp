@@ -12,12 +12,6 @@ Register INPMUX::toRegister(void) const {
 	return regValue;
 }
 
-#ifdef ADS124S08_GTEST_TESTING
-constexpr INPMUX::INPMUX(const std::array<Register, 2> &vals)
-	: MUXP{vals[0]}, //
-	  MUXN{vals[1]} {}
-#endif
-
 INPMUX::INPMUX(Register val)
 	: MUXP{static_cast<Register>((val >> 4u) & 0x0Fu)},
 	  MUXN{static_cast<Register>((val >> 0u) & 0x0Fu)} {}

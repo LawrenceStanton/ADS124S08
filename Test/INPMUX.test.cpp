@@ -4,15 +4,16 @@
 
 #include "../Src/INPMUX.cpp"
 
-using INPMUX   = ADS124S08::INPMUX;
-using Register = ADS124S08::Register;
+using INPMUX	  = ADS124S08::INPMUX;
+using Register	  = ADS124S08::Register;
+using InputSelect = ADS124S08::INPMUX::InputSelect;
 
 TEST(INPMUX_Test, toRegister_PacksFieldsCorrectly) {
 	const std::pair<Register, INPMUX> testCases[] = {
-		{0x00u, INPMUX({0b0000u, 0b0000u})},
-		{0xFFu, INPMUX({0b1111u, 0b1111u})},
-		{0x5Au, INPMUX({0b0101u, 0b1010u})},
-		{0xA5u, INPMUX({0b1010u, 0b0101u})},
+		{0x00u, INPMUX(static_cast<InputSelect>(0b0000u), static_cast<InputSelect>(0b0000u))},
+		{0xFFu, INPMUX(static_cast<InputSelect>(0b1111u), static_cast<InputSelect>(0b1111u))},
+		{0x5Au, INPMUX(static_cast<InputSelect>(0b0101u), static_cast<InputSelect>(0b1010u))},
+		{0xA5u, INPMUX(static_cast<InputSelect>(0b1010u), static_cast<InputSelect>(0b0101u))},
 	};
 
 	for (const auto &testCase : testCases) {

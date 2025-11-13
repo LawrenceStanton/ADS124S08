@@ -8,6 +8,10 @@ using Register		 = ADS124S08::SPI::Register;
 using Command		 = ADS124S08::SPI::Command;
 using ControlCommand = ADS124S08::SPI::ControlCommand;
 
+ADS124S08::ADS124S08(SPI &spi) : spi(spi) {
+	getSystemControl();
+}
+
 static constexpr Address ADS124S08_MAX_REGISTER_ADDRESS = static_cast<Address>(0x11u);
 static constexpr uint8_t ADS124S08_MAX_REGISTER_COUNT	= 18u;
 
@@ -77,6 +81,55 @@ std::optional<ADS124S08::Register> ADS124S08::wreg(
 	const SPI::Register			 &value
 ) const noexcept {
 	return wreg(startAddress, 1u, &value);
+}
+
+std::optional<ADS124S08::RDATA>
+ADS124S08::rdata(std::optional<bool> statusEnabled, std::optional<bool> crcEnabled) const noexcept {
+	uint8_t byteCount = 3u; // Data bytes
+
+	bool statusByte =
+		statusEnabled.value_or(SYS(sysCache).sendStat());	 // Default to cached SYS register value
+	bool crcByte = crcEnabled.value_or(SYS(sysCache).crc()); // Default to cached SYS register value
+
+	if (statusByte) byteCount += 1u;
+	if (crcByte) byteCount += 1u;
+
+	Register misoBuffer[5u] = {0}; // Max 5 bytes (STATUS + 3 data + CRC)
+
+	Register mosiBuffer[1u] = {
+		static_cast<Register>(SPI::DataReadCommand::RDATA),
+	};
+
+	auto writeResult = spi.write(mosiBuffer, sizeof(mosiBuffer));
+	if (!writeResult) return std::nullopt;
+
+	auto readResult = spi.read(misoBuffer, byteCount);
+	if (!readResult) return std::nullopt;
+
+	RDATA result;
+
+	uint8_t index = 0u;
+	if (statusByte) result.status = misoBuffer[index++];
+	else result.status = std::nullopt;
+
+	result.data = 0u;
+	for (uint8_t i = index; i < index + 3u; i++) {
+		result.data = (result.data << 8u) | misoBuffer[i];
+	}
+	index += 3u;
+
+	if (crcByte) result.crc = misoBuffer[index++];
+	else result.crc = std::nullopt;
+
+	return result;
+}
+
+std::optional<ADS124S08::SYS> ADS124S08::getSystemControl(void) noexcept {
+	auto sysReg = rreg(SPI::Address::SYS, 1u);
+	if (sysReg) {
+		sysCache = *sysReg;
+		return SYS(*sysReg);
+	} else return std::nullopt;
 }
 
 static std::optional<Register>

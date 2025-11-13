@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <optional>
 #include <tuple>
@@ -94,11 +95,6 @@ public:
 
 		virtual ~SPI() = default;
 	};
-
-private:
-	SPI &spi;
-
-public:
 	using Address  = SPI::Address;
 	using Register = SPI::Register;
 
@@ -123,7 +119,13 @@ public:
 	struct GPIODAT;
 	struct GPIOCON;
 
-	explicit constexpr ADS124S08(SPI &spi) : spi(spi) {}
+private:
+	SPI &spi;
+
+	Register sysCache{0x80u};
+
+public:
+	explicit ADS124S08(SPI &spi);
 
 	/**
 	 * @brief Send the WAKEUP command to the ADS124S08 to exit power-down mode.
@@ -183,7 +185,49 @@ public:
 	 */
 	std::optional<Register> selfOffsetCalibrate() noexcept;
 
+	/**
+	 * @brief Set a register on the ADS124S08.
+	 *
+	 * @param reg A SPI_Register_I interface representing the register to set.
+	 * @return The register value written if successful, `std::nullopt` otherwise.
+	 */
 	std::optional<Register> setRegister(const SPI_Register_I &reg) const noexcept;
+
+	/**
+	 * @brief RDATA structure returned by the rdata() method.
+	 *
+	 */
+	struct RDATA {
+		std::optional<Register> status;
+		int32_t					data;
+		std::optional<Register> crc;
+	};
+
+	/**
+	 * @brief Perform the RDATA command to read conversion data from the ADS124S08.
+	 *
+	 * @param statusEnabled Status byte override. If std::nullopt, uses the cached STATUS register
+	 * value. Else force enable/disable.
+	 * @param crcEnabled CRC byte override. If std::nullopt, uses the cached CRC register value.
+	 * Else force enable/disable.
+	 *
+	 * @return The RDATA structure if successful, `std::nullopt` otherwise.
+	 * @note Refer to the ADS124S08 §9.5.4.2 for details.
+	 */
+	std::optional<RDATA> rdata(
+		std::optional<bool> statusEnabled = std::nullopt,
+		std::optional<bool> crcEnabled	  = std::nullopt
+	) const noexcept;
+
+	/**
+	 * @brief Get the Status register and memorize it.
+	 *
+	 * @return The current Status register value if successful, `std::nullopt` otherwise.
+	 *
+	 * @note Calling this method updates the internal cached SYS register value, which is
+	 * referenced by rdata. If this behaviour is not desired, use rreg directly.
+	 */
+	std::optional<SYS> getSystemControl(void) noexcept;
 
 	/**
 	 * @brief Perform a RREG operation to read registers from the ADS124S08.
@@ -225,6 +269,10 @@ public:
 		Address			startAddress, //
 		const Register &value
 	) const noexcept;
+
+#ifdef ADS124S08_GTEST_TESTING
+	FRIEND_TEST(ADS124S08_Test, getSystemControlUpdatesSysCache);
+#endif
 };
 
 #include "Private/SPI_Register_I.hpp"
@@ -236,3 +284,5 @@ public:
 #include "Private/REF.hpp"
 
 #include "Private/INPMUX.hpp"
+
+#include "Private/SYS.hpp"

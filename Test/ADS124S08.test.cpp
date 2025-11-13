@@ -401,3 +401,109 @@ TEST_F(ADS124S08_Test, setRegistersNormallySucceedsAndReturnsWrittenValue) {
 	EXPECT_TRUE(result.has_value());
 	EXPECT_EQ(result.value(), 0xA5u);
 }
+
+TEST_F(ADS124S08_Test, rdataNormallyReadsExpectedValues) {
+	std::array<Register, 3u> fakeData = {0x12u, 0x34u, 0x56u};
+
+	mockSPI.delegateToFakes(fakeData.data());
+
+	EXPECT_CALL(mockSPI, write(_, Eq(1u))).Times(1);
+	EXPECT_CALL(mockSPI, read(_, Eq(3u))).Times(1);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.rdata();
+	EXPECT_TRUE(result.has_value());
+	EXPECT_FALSE(result->status.has_value());
+	EXPECT_FALSE(result->crc.has_value());
+	EXPECT_EQ(result->data, 0x123456);
+}
+
+TEST_F(ADS124S08_Test, rdataWithStatusReturnsExpectedValues) {
+	std::array<Register, 4u> fakeData = {0xABu, 0x12u, 0x34u, 0x56u};
+
+	mockSPI.delegateToFakes(fakeData.data());
+
+	EXPECT_CALL(mockSPI, write(_, Eq(1u))).Times(1);
+	EXPECT_CALL(mockSPI, read(_, Eq(4u))).Times(1);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.rdata(true, false);
+	EXPECT_TRUE(result.has_value());
+	EXPECT_TRUE(result->status.has_value());
+	EXPECT_EQ(result->status.value(), 0xABu);
+	EXPECT_FALSE(result->crc.has_value());
+	EXPECT_EQ(result->data, 0x123456);
+}
+
+TEST_F(ADS124S08_Test, rdataWithCrcReturnsExpectedValues) {
+	std::array<Register, 4u> fakeData = {0x12u, 0x34u, 0x56u, 0xCDu};
+
+	mockSPI.delegateToFakes(fakeData.data());
+
+	EXPECT_CALL(mockSPI, write(_, Eq(1u))).Times(1);
+	EXPECT_CALL(mockSPI, read(_, Eq(4u))).Times(1);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.rdata(false, true);
+	EXPECT_TRUE(result.has_value());
+	EXPECT_FALSE(result->status.has_value());
+	EXPECT_TRUE(result->crc.has_value());
+	EXPECT_EQ(result->crc.value(), 0xCDu);
+	EXPECT_EQ(result->data, 0x123456);
+}
+
+TEST_F(ADS124S08_Test, rdataWithStatusAndCrcReturnsExpectedValues) {
+	std::array<Register, 5u> fakeData = {0xABu, 0x12u, 0x34u, 0x56u, 0xCDu};
+
+	mockSPI.delegateToFakes(fakeData.data());
+
+	EXPECT_CALL(mockSPI, write(_, Eq(1u))).Times(1);
+	EXPECT_CALL(mockSPI, read(_, Eq(5u))).Times(1);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.rdata(true, true);
+	EXPECT_TRUE(result.has_value());
+	EXPECT_TRUE(result->status.has_value());
+	EXPECT_EQ(result->status.value(), 0xABu);
+	EXPECT_TRUE(result->crc.has_value());
+	EXPECT_EQ(result->crc.value(), 0xCDu);
+	EXPECT_EQ(result->data, 0x123456);
+}
+
+TEST_F(ADS124S08_Test, rdataReturnsNulloptWhenSpiFails) {
+	mockSPI.disableSPI();
+
+	auto result = adc.rdata();
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, getSystemControlNormallyReturnsExpectedValue) {
+	Register fakeSysRegValue = 0x5Au;
+
+	mockSPI.delegateToFakes(&fakeSysRegValue);
+
+	EXPECT_CALL(mockSPI, write(_, Eq(2u))).Times(1);
+	EXPECT_CALL(mockSPI, read(_, Eq(1u))).Times(1);
+	EXPECT_CALL(mockSPI, readWrite(_, _, _)).Times(0);
+
+	auto result = adc.getSystemControl();
+	EXPECT_TRUE(result.has_value());
+	EXPECT_EQ(result->toRegister(), fakeSysRegValue);
+}
+
+TEST_F(ADS124S08_Test, getSystemControlReturnsNulloptWhenSpiFails) {
+	mockSPI.disableSPI();
+
+	auto result = adc.getSystemControl();
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, getSystemControlUpdatesSysCache) {
+	Register fakeSysRegValue = 0xA5u;
+
+	mockSPI.delegateToFakes(&fakeSysRegValue);
+
+	adc.sysCache = 0x00u; // Set to known value
+	adc.getSystemControl();
+	EXPECT_EQ(adc.sysCache, fakeSysRegValue);
+}
