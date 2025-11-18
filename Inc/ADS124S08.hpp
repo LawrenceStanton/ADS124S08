@@ -286,3 +286,5 @@ public:
 #include "Private/INPMUX.hpp"
 
 #include "Private/SYS.hpp"
+
+#include "Private/PGA.hpp"
