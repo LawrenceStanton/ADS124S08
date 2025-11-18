@@ -288,3 +288,5 @@ public:
 #include "Private/SYS.hpp"
 
 #include "Private/PGA.hpp"
+
+#include "Private/DATARATE.hpp"
