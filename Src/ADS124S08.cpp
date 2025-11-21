@@ -175,3 +175,14 @@ std::optional<Register> ADS124S08::setRegister(const SPI_Register_I &reg) const 
 	Register value = reg.toRegister();
 	return wreg(reg.getAddress(), value);
 }
+
+float ADS124S08::RDATA::toVoltage(float pgaGain, float vRef) const {
+	// Convert 24-bit two's complement data to a signed integer
+	int32_t rawData = static_cast<int32_t>(data);
+	if (rawData & 0x800000) {  // Check if the sign bit is set
+		rawData |= 0xFF000000; // Sign-extend to 32 bits
+	}
+
+	// Convert to voltage
+	return (rawData / static_cast<float>(0x800000)) * (vRef / pgaGain);
+}

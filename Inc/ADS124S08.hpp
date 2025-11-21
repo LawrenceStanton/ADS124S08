@@ -196,18 +196,23 @@ public:
 	/**
 	 * @brief RDATA structure returned by the rdata() method.
 	 *
+	 * @attention `data` is raw ADC 24-bit signed integer value in two's complement format. Sign
+	 * extension has not been applied.
+	 *
 	 */
 	struct RDATA {
 		std::optional<Register> status;
-		int32_t					data;
+		uint32_t				data;
 		std::optional<Register> crc;
+
+		float toVoltage(float pgaGain = 1.0f, float vRef = 2.5f) const;
 	};
 
 	/**
 	 * @brief Perform the RDATA command to read conversion data from the ADS124S08.
 	 *
-	 * @param statusEnabled Status byte override. If std::nullopt, uses the cached STATUS register
-	 * value. Else force enable/disable.
+	 * @param statusEnabled Status byte override. If std::nullopt, uses the cached STATUS
+	 * register value. Else force enable/disable.
 	 * @param crcEnabled CRC byte override. If std::nullopt, uses the cached CRC register value.
 	 * Else force enable/disable.
 	 *
@@ -254,9 +259,10 @@ public:
 	 * @param count The number of registers to write.
 	 * @param buffer A pointer to an array containing the register values to write.
 	 * @return The first register value written if successful, `std::nullopt` otherwise.
-	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or the
-	 * ADC SPI timeout must elapse before the next command will be accepted.
-	 * @note Writing to certain registers may reset the digital filter and start a new conversion.
+	 * @warning If std::nullopt is returned, the ADC must either be reset, CS brought high, or
+	 * the ADC SPI timeout must elapse before the next command will be accepted.
+	 * @note Writing to certain registers may reset the digital filter and start a new
+	 * conversion.
 	 * @note Refer to the ADS124S08 §9.5.3.12 "WREG" for details.
 	 */
 	std::optional<Register> wreg(

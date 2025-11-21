@@ -507,3 +507,38 @@ TEST_F(ADS124S08_Test, getSystemControlUpdatesSysCache) {
 	adc.getSystemControl();
 	EXPECT_EQ(adc.sysCache, fakeSysRegValue);
 }
+
+TEST(ADS124S08_RDATA_Test, toVoltageCalculatesExpectedVoltage) {
+	ADS124S08::RDATA rdata;
+
+	const auto testCases = std::array<std::tuple<uint32_t, float, float, float>, 5>{
+		// data, pgaGain, vRef, expectedVoltage
+		std::make_tuple(0x000000u, 1.0f, 2.5f, 0.0f),	 // Zero
+		std::make_tuple(0x7FFFFFu, 1.0f, 2.5f, 2.5f),	 // Max positive
+		std::make_tuple(0x800000u, 1.0f, 2.5f, -2.5f),	 // Max negative
+		std::make_tuple(0x400000u, 2.0f, 2.5f, 0.625f),	 // Mid positive with gain
+		std::make_tuple(0xC00000u, 2.0f, 2.5f, -0.625f), // Mid negative with gain
+	};
+
+	for (const auto &[data, pgaGain, vRef, expectedVoltage] : testCases) {
+		char dataHex[9] = {0};
+		snprintf(dataHex, sizeof(dataHex), "0x%06X", data);
+
+		SCOPED_TRACE(
+			testing::Message() << "Data: " << dataHex << ", PGA Gain: " << pgaGain
+							   << ", VRef: " << vRef << ", Expected Voltage: " << expectedVoltage
+		);
+
+		rdata.data	  = data;
+		float voltage = rdata.toVoltage(pgaGain, vRef);
+		EXPECT_NEAR(voltage, expectedVoltage, 0.0001f);
+	}
+}
+
+TEST(ADS124S08_RDATA_Test, toVoltageDefaultsToNominalReferenceVoltageUnityGain) {
+	ADS124S08::RDATA rdata;
+	rdata.data = 0x7FFFFFu; // Max positive
+
+	float voltage = rdata.toVoltage();
+	EXPECT_NEAR(voltage, 2.5f, 0.0001f);
+}
