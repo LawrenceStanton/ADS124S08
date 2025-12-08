@@ -508,6 +508,43 @@ TEST_F(ADS124S08_Test, getSystemControlUpdatesSysCache) {
 	EXPECT_EQ(adc.sysCache, fakeSysRegValue);
 }
 
+TEST_F(ADS124S08_Test, setSystemControlNormallyWritesExpectedValue) {
+	Register fakeSysRegValue = 0x3Cu;
+
+	mockSPI.delegateToFakes(nullptr);
+
+	EXPECT_CALL(mockSPI, write(_, _)).Times(1);
+
+	ADS124S08::SYS sysControl(fakeSysRegValue);
+
+	auto result = adc.setSystemControl(sysControl);
+	EXPECT_TRUE(result.has_value());
+	EXPECT_EQ(result.value(), fakeSysRegValue);
+}
+
+TEST_F(ADS124S08_Test, setSystemControlReturnsNulloptWhenSpiFails) {
+	mockSPI.disableSPI();
+
+	ADS124S08::SYS sysControl(0x3Cu);
+
+	auto result = adc.setSystemControl(sysControl);
+	EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(ADS124S08_Test, setSystemControlUpdatesSysCache) {
+	Register fakeSysRegValue = 0x7Eu;
+
+	mockSPI.delegateToFakes(nullptr);
+
+	EXPECT_CALL(mockSPI, write(_, _)).Times(1);
+
+	ADS124S08::SYS sysControl(fakeSysRegValue);
+
+	adc.sysCache = 0x00u; // Set to known value
+	adc.setSystemControl(sysControl);
+	EXPECT_EQ(adc.sysCache, fakeSysRegValue);
+}
+
 TEST(ADS124S08_RDATA_Test, toVoltageCalculatesExpectedVoltage) {
 	ADS124S08::RDATA rdata;
 

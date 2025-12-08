@@ -132,6 +132,14 @@ std::optional<ADS124S08::SYS> ADS124S08::getSystemControl(void) noexcept {
 	} else return std::nullopt;
 }
 
+std::optional<ADS124S08::Register> ADS124S08::setSystemControl(const SYS &sysReg) noexcept {
+	auto writeResult = setRegister(sysReg);
+	if (writeResult) {
+		sysCache = *writeResult;
+		return writeResult;
+	} else return std::nullopt;
+}
+
 static std::optional<Register>
 writeSingleByteCommand(ADS124S08::SPI &spi, Command command) noexcept {
 	const auto writeResult = spi.write(&command, 1u);

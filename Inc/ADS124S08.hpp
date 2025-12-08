@@ -235,6 +235,15 @@ public:
 	std::optional<SYS> getSystemControl(void) noexcept;
 
 	/**
+	 * @brief Set the System Control (SYS) register.
+	 *
+	 * @param sysReg The SYS register to set.
+	 * @return The register value written if successful, `std::nullopt` otherwise.
+	 * @note Calling this method caches the SYS register value.
+	 */
+	std::optional<Register> setSystemControl(const SYS &sysReg) noexcept;
+
+	/**
 	 * @brief Perform a RREG operation to read registers from the ADS124S08.
 	 *
 	 * @param startAddress The starting register address to read from.
@@ -278,6 +287,7 @@ public:
 
 #ifdef ADS124S08_GTEST_TESTING
 	FRIEND_TEST(ADS124S08_Test, getSystemControlUpdatesSysCache);
+	FRIEND_TEST(ADS124S08_Test, setSystemControlUpdatesSysCache);
 #endif
 };
 
